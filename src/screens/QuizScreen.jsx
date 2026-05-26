@@ -74,6 +74,15 @@ const QuestionCard = ({ question, score, streak, remainingTime, onAnswer, answer
             src={question.correctCountry.flagPng}
             alt="Flag"
             style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            onError={(e) => {
+              if (e.currentTarget.src !== question.correctCountry.flagSvg) {
+                e.currentTarget.src = question.correctCountry.flagSvg;
+              } else {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.parentElement.innerHTML =
+                  '<div style="font-size:48px;text-align:center">🏳️</div>';
+              }
+            }}
           />
         </div>
       )}
