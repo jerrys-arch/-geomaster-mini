@@ -4,87 +4,84 @@ import HomeScreen from './screens/HomeScreen.jsx';
 import QuizScreen from './screens/QuizScreen.jsx';
 import LeaderboardScreen from './screens/LeaderboardScreen.jsx';
 
-const getUser = () => {
-  // Read tg fresh each time — not at module load time
-  const tg = window.Telegram?.WebApp;
-
-  console.log('tg object:', tg);
-  console.log('initData:', tg?.initData);
-  console.log('initDataUnsafe:', tg?.initDataUnsafe);
-
-  // Try initDataUnsafe first
-  const user = tg?.initDataUnsafe?.user;
-  if (user?.id) {
-    console.log('Got user from initDataUnsafe:', user);
-    return {
-      id: user.id,
-      firstName: user.first_name ?? 'Explorer',
-      username: user.username ?? null,
-      languageCode: user.language_code ?? 'en',
-      countryCode: 'XX',
-    };
-  }
-
-  // Try parsing initData manually
-  try {
-    const initData = tg?.initData;
-    if (initData) {
-      const params = new URLSearchParams(initData);
-      const userStr = params.get('user');
-      if (userStr) {
-        const parsed = JSON.parse(decodeURIComponent(userStr));
-        console.log('Got user from initData parsing:', parsed);
-        return {
-          id: parsed.id,
-          firstName: parsed.first_name ?? 'Explorer',
-          username: parsed.username ?? null,
-          languageCode: parsed.language_code ?? 'en',
-          countryCode: 'XX',
-        };
-      }
-    }
-  } catch (e) {
-    console.log('initData parse error:', e);
-  }
-
-  console.log('No Telegram user found, using guest');
-  return {
-    id: 'guest_' + Math.random().toString(36).slice(2, 8),
-    firstName: 'Explorer',
-    username: null,
-    languageCode: 'en',
-    countryCode: 'XX',
-  };
-};
-
 const App = () => {
   const [screen, setScreen] = useState('home');
   const [selectedTier, setSelectedTier] = useState(null);
   const [user, setUser] = useState(null);
+  const [debugInfo, setDebugInfo] = useState('loading...');
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
     tg?.ready();
     tg?.expand();
 
-    // wait for Telegram to fully inject user data
     setTimeout(() => {
-      const telegramUser = getUser();
-      console.log('Final user:', telegramUser);
+      const initData = tg?.initData ?? 'EMPTY';
+      const initDataUnsafe = JSON.stringify(tg?.initDataUnsafe ?? {});
+      const userObj = tg?.initDataUnsafe?.user;
+
+      setDebugInfo(`
+        initData: ${initData.substring(0, 100)}
+        initDataUnsafe: ${initDataUnsafe}
+        user: ${JSON.stringify(userObj)}
+        tg version: ${tg?.version}
+        platform: ${tg?.platform}
+      `);
+
+      const telegramUser = {
+        id: userObj?.id ?? 'guest_' + Math.random().toString(36).slice(2, 8),
+        firstName: userObj?.first_name ?? 'Explorer',
+        username: userObj?.username ?? null,
+        languageCode: userObj?.language_code ?? 'en',
+        countryCode: 'XX',
+      };
+
       setUser(telegramUser);
       upsertUser(telegramUser);
     }, 500);
   }, []);
 
+  // Show debug screen first
+  if (debugInfo && user?.firstName === 'Explorer') {
+    return (
+      <div style={{
+        padding: '20px',
+        background: '#f0f4ff',
+        minHeight: '100vh',
+        fontSize: '12px',
+        wordBreak: 'break-all',
+      }}>
+        <h2 style={{ marginBottom: '12px' }}>Debug Info</h2>
+        <pre style={{
+          background: '#fff',
+          padding: '12px',
+          borderRadius: '8px',
+          whiteSpace: 'pre-wrap',
+          marginBottom: '16px',
+        }}>
+          {debugInfo}
+        </pre>
+        <button
+          onClick={() => setDebugInfo(null)}
+          style={{
+            width: '100%', height: '50px',
+            background: '#1976d2', color: '#fff',
+            border: 'none', borderRadius: '12px',
+            fontSize: '16px', cursor: 'pointer',
+          }}
+        >
+          Continue anyway
+        </button>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: '#f0f4ff',
-        fontSize: '48px',
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'center', minHeight: '100vh',
+        background: '#f0f4ff', fontSize: '48px',
       }}>
         🌍
       </div>
