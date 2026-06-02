@@ -112,12 +112,26 @@ const QuestionCard = ({ question, score, streak, remainingTime, onAnswer, answer
         {question.prompt}
       </p>
 
+      {/* Correct answer reveal on wrong */}
+      {answerStatus && !answerStatus.isCorrect && (
+        <div style={{
+          textAlign: 'center',
+          fontSize: '14px',
+          color: '#2e7d32',
+          fontWeight: '600',
+          marginBottom: '8px',
+          animation: 'pop 0.3s ease',
+        }}>
+          ✅ Correct answer: {question.correctAnswer}
+        </div>
+      )}
+
       {/* Options */}
       {question.options.map(opt => {
         let status = null;
         if (answerStatus) {
           if (opt === question.correctAnswer) status = 'correct';
-          else if (opt === answerStatus.selected) status = 'wrong';
+          else if (opt === answerStatus.selected && !answerStatus.isCorrect) status = 'wrong';
         }
         return (
           <OptionButton
@@ -318,10 +332,13 @@ const QuizScreen = ({ tier = 1, user, onBack }) => {
 
     setAnswerStatus({ selected, isCorrect });
 
+    // wrong answer — show correct for longer so player learns
+    const delay = isCorrect ? 600 : 1500;
+
     setTimeout(() => {
       setAnswerStatus(null);
       submitAnswer(selected);
-    }, 800);
+    }, delay);
   }, [answerStatus, state.question, submitAnswer]);
 
   return (
