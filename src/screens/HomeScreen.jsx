@@ -54,7 +54,7 @@ const getTotalScore = () => {
   }, 0);
 };
 
-const HomeScreen = ({ user, onSelectTier }) => {
+const HomeScreen = ({ user, onSelectTier, onLeaderboard }) => {
   const totalScore = getTotalScore();
 
   return (
@@ -288,6 +288,41 @@ const HomeScreen = ({ user, onSelectTier }) => {
             </button>
           );
         })}
+
+        {/* Leaderboard button */}
+        <button
+          onClick={onLeaderboard}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            padding: '16px',
+            borderRadius: '18px',
+            border: 'none',
+            background: 'linear-gradient(135deg, #1565c0, #1976d2)',
+            color: '#ffffff',
+            fontSize: '17px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            marginTop: '8px',
+            marginBottom: '10px',
+            boxShadow: '0 4px 12px rgba(25,118,210,0.4)',
+          }}
+        >
+          🏆 Global Leaderboard
+        </button>
+
+        <p style={{
+          textAlign: 'center',
+          fontSize: '12px',
+          color: '#aaa',
+          marginTop: '8px',
+          marginBottom: '20px',
+        }}>
+          More tiers coming soon
+        </p>
       </div>
     </div>
   );

@@ -2,37 +2,45 @@ import { useState } from 'react';
 import { upsertUser } from './services/supabaseService.js';
 import HomeScreen from './screens/HomeScreen.jsx';
 import QuizScreen from './screens/QuizScreen.jsx';
+import LeaderboardScreen from './screens/LeaderboardScreen.jsx';
 
-const { ready, getUser } = (() => {
-  const tg = window.Telegram?.WebApp;
+const tg = window.Telegram?.WebApp;
+
+const initApp = () => {
+  tg?.ready();
+  tg?.expand();
+  const user = tg?.initDataUnsafe?.user;
   return {
-    ready: () => { tg?.ready(); tg?.expand(); },
-    getUser: () => {
-      const user = tg?.initDataUnsafe?.user;
-      return {
-        id: user?.id ?? 'guest_' + Math.random().toString(36).slice(2, 8),
-        firstName: user?.first_name ?? 'Explorer',
-        username: user?.username ?? null,
-        languageCode: user?.language_code ?? 'en',
-        countryCode: 'XX',
-      };
-    },
+    id: user?.id ?? 'guest_' + Math.random().toString(36).slice(2, 8),
+    firstName: user?.first_name ?? 'Explorer',
+    username: user?.username ?? null,
+    languageCode: user?.language_code ?? 'en',
+    countryCode: 'XX',
   };
-})();
+};
 
-ready();
-const initialUser = getUser();
+const initialUser = initApp();
 upsertUser(initialUser);
 
 const App = () => {
+  const [screen, setScreen] = useState('home');
   const [selectedTier, setSelectedTier] = useState(null);
 
-  if (selectedTier) {
+  if (screen === 'quiz' && selectedTier) {
     return (
       <QuizScreen
         tier={selectedTier}
         user={initialUser}
-        onBack={() => setSelectedTier(null)}
+        onBack={() => setScreen('home')}
+      />
+    );
+  }
+
+  if (screen === 'leaderboard') {
+    return (
+      <LeaderboardScreen
+        user={initialUser}
+        onBack={() => setScreen('home')}
       />
     );
   }
@@ -40,7 +48,11 @@ const App = () => {
   return (
     <HomeScreen
       user={initialUser}
-      onSelectTier={(tier) => setSelectedTier(tier)}
+      onSelectTier={(tier) => {
+        setSelectedTier(tier);
+        setScreen('quiz');
+      }}
+      onLeaderboard={() => setScreen('leaderboard')}
     />
   );
 };
