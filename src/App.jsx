@@ -4,17 +4,55 @@ import HomeScreen from './screens/HomeScreen.jsx';
 import QuizScreen from './screens/QuizScreen.jsx';
 import LeaderboardScreen from './screens/LeaderboardScreen.jsx';
 
-const tg = window.Telegram?.WebApp;
-
 const getUser = () => {
-  const user = tg?.initDataUnsafe?.user;
-  console.log('Telegram user:', user);
+  // Read tg fresh each time — not at module load time
+  const tg = window.Telegram?.WebApp;
+
+  console.log('tg object:', tg);
   console.log('initData:', tg?.initData);
+  console.log('initDataUnsafe:', tg?.initDataUnsafe);
+
+  // Try initDataUnsafe first
+  const user = tg?.initDataUnsafe?.user;
+  if (user?.id) {
+    console.log('Got user from initDataUnsafe:', user);
+    return {
+      id: user.id,
+      firstName: user.first_name ?? 'Explorer',
+      username: user.username ?? null,
+      languageCode: user.language_code ?? 'en',
+      countryCode: 'XX',
+    };
+  }
+
+  // Try parsing initData manually
+  try {
+    const initData = tg?.initData;
+    if (initData) {
+      const params = new URLSearchParams(initData);
+      const userStr = params.get('user');
+      if (userStr) {
+        const parsed = JSON.parse(decodeURIComponent(userStr));
+        console.log('Got user from initData parsing:', parsed);
+        return {
+          id: parsed.id,
+          firstName: parsed.first_name ?? 'Explorer',
+          username: parsed.username ?? null,
+          languageCode: parsed.language_code ?? 'en',
+          countryCode: 'XX',
+        };
+      }
+    }
+  } catch (e) {
+    console.log('initData parse error:', e);
+  }
+
+  console.log('No Telegram user found, using guest');
   return {
-    id: user?.id ?? 'guest_' + Math.random().toString(36).slice(2, 8),
-    firstName: user?.first_name ?? 'Explorer',
-    username: user?.username ?? null,
-    languageCode: user?.language_code ?? 'en',
+    id: 'guest_' + Math.random().toString(36).slice(2, 8),
+    firstName: 'Explorer',
+    username: null,
+    languageCode: 'en',
     countryCode: 'XX',
   };
 };
@@ -25,15 +63,17 @@ const App = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
+    const tg = window.Telegram?.WebApp;
     tg?.ready();
     tg?.expand();
 
-    // small delay to let Telegram inject user data
+    // wait for Telegram to fully inject user data
     setTimeout(() => {
       const telegramUser = getUser();
+      console.log('Final user:', telegramUser);
       setUser(telegramUser);
       upsertUser(telegramUser);
-    }, 300);
+    }, 500);
   }, []);
 
   if (!user) {
