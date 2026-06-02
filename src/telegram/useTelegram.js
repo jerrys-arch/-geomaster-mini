@@ -19,8 +19,9 @@ export const useTelegram = () => {
   const shareScore = (score, highScore, tier) => {
     const tierNames = { 1: 'Flags', 2: 'Capitals', 3: 'Population' };
     const tierName = tierNames[tier] ?? 'GeoMaster';
-    const text = `I just scored ${score} in ${tierName}! 🌍 My high score is ${highScore}. Can you beat me?`;
-    const url = `https://t.me/share/url?url=https://t.me/your_bot&text=${encodeURIComponent(text)}`;
+    const text = `I just scored ${score} in ${tierName} on GeoMaster! 🌍 My high score is ${highScore}. Can you beat me?`;
+    const appUrl = 'https://t.me/GeoMasterQuiz_bot/play';
+    const url = `https://t.me/share/url?url=${encodeURIComponent(appUrl)}&text=${encodeURIComponent(text)}`;
     if (tg) {
       tg.openTelegramLink(url);
     } else {
