@@ -3,6 +3,7 @@ import { upsertUser } from './services/supabaseService.js';
 import HomeScreen from './screens/HomeScreen.jsx';
 import QuizScreen from './screens/QuizScreen.jsx';
 import LeaderboardScreen from './screens/LeaderboardScreen.jsx';
+import DailyChallengeScreen from './screens/DailyChallengeScreen.jsx';
 
 const App = () => {
   const [screen, setScreen] = useState('home');
@@ -59,6 +60,15 @@ const App = () => {
     );
   }
 
+  if (screen === 'daily') {
+    return (
+      <DailyChallengeScreen
+        user={user}
+        onBack={() => setScreen('home')}
+      />
+    );
+  }
+
   return (
     <HomeScreen
       user={user}
@@ -67,6 +77,7 @@ const App = () => {
         setScreen('quiz');
       }}
       onLeaderboard={() => setScreen('leaderboard')}
+      onDaily={() => setScreen('daily')}
     />
   );
 };

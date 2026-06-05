@@ -54,7 +54,7 @@ const getTotalScore = () => {
   }, 0);
 };
 
-const HomeScreen = ({ user, onSelectTier, onLeaderboard }) => {
+const HomeScreen = ({ user, onSelectTier, onLeaderboard, onDaily }) => {
   const totalScore = getTotalScore();
 
   return (
@@ -116,8 +116,50 @@ const HomeScreen = ({ user, onSelectTier, onLeaderboard }) => {
         </div>
       </div>
 
-      {/* Tiers */}
+      {/* Content */}
       <div style={{ padding: '20px 16px' }}>
+
+        {/* Daily Challenge button — most prominent */}
+        <button
+          onClick={onDaily}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
+            padding: '16px',
+            borderRadius: '18px',
+            border: 'none',
+            background: 'linear-gradient(135deg, #e65100, #ff6d00)',
+            color: '#ffffff',
+            cursor: 'pointer',
+            marginBottom: '16px',
+            textAlign: 'left',
+            boxShadow: '0 4px 16px rgba(230,81,0,0.4)',
+            transition: 'transform 0.1s',
+          }}
+          onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
+          onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <div style={{
+            width: '52px', height: '52px', borderRadius: '14px',
+            background: 'rgba(255,255,255,0.2)',
+            display: 'flex', alignItems: 'center',
+            justifyContent: 'center', fontSize: '26px', flexShrink: 0,
+          }}>
+            📅
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: '700', fontSize: '16px', marginBottom: '2px' }}>
+              Daily Challenge
+            </div>
+            <div style={{ fontSize: '13px', opacity: 0.85 }}>
+              10 questions · same for everyone today
+            </div>
+          </div>
+          <span style={{ fontSize: '20px' }}>›</span>
+        </button>
+
         <p style={{
           fontSize: '13px',
           fontWeight: '700',

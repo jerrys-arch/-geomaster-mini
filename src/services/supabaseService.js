@@ -95,3 +95,63 @@ export const getCountryLeaderboard = async (tier) => {
   return Object.values(countryMap)
     .sort((a, b) => b.total - a.total);
 };
+
+// Get today's date as string YYYY-MM-DD
+export const getTodayDate = () => {
+  return new Date().toISOString().split('T')[0];
+};
+
+// Check if user already played today's challenge
+export const getDailyResult = async (telegramId, tier = 1) => {
+  const today = getTodayDate();
+  const { data, error } = await supabase
+    .from('daily_challenges')
+    .select('*')
+    .eq('telegram_id', telegramId)
+    .eq('date', today)
+    .eq('tier', tier)
+    .single();
+
+  if (error) return null;
+  return data;
+};
+
+// Save daily challenge result
+export const saveDailyResult = async (telegramUser, score, total, tier = 1) => {
+  if (!isRealUser(telegramUser)) return null;
+
+  const today = getTodayDate();
+  const { data, error } = await supabase
+    .from('daily_challenges')
+    .insert({
+      telegram_id: telegramUser.id,
+      first_name: telegramUser.firstName,
+      username: telegramUser.username ?? null,
+      country_code: telegramUser.countryCode ?? 'XX',
+      score,
+      total,
+      date: today,
+      tier,
+    });
+
+  if (error) console.error('saveDailyResult error:', error);
+  return data;
+};
+
+// Get daily leaderboard for today
+export const getDailyLeaderboard = async (tier = 1, limit = 20) => {
+  const today = getTodayDate();
+  const { data, error } = await supabase
+    .from('daily_challenges')
+    .select('first_name, username, country_code, score, total')
+    .eq('date', today)
+    .eq('tier', tier)
+    .order('score', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('getDailyLeaderboard error:', error);
+    return [];
+  }
+  return data;
+};
